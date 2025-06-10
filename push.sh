@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Copy from ~/.config to ~/dotfiles
-
 # Remove existing dotfiles
 rm -rf .config .mozilla .local
 
@@ -12,8 +10,6 @@ python3 make_copy.py
 rm -rf __pycache__/
 
 # Remove large bin
-rm .local/bin/{uv,uvx,migrate}
-
 
 # Let me do remaining with lazygit
 lazygit
