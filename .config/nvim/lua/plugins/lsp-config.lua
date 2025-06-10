@@ -28,14 +28,17 @@ return {
 
 
     require("mason-lspconfig").setup({
+      ensure_installed = {
+        "lua_ls", "basedpyright",
+        "pylsp", "ruff", "emmet_language_server",
+        "gopls", "bashls"
+      },
       automatic_installation = true,
       handlers = {
         function(server_name)
           local ok, opts = pcall(require, "lsp.servers." .. server_name)
           if ok then
             require("lspconfig")[server_name].setup(opts)
-
-            print("Setting up: " .. server_name)
           end
           if not ok then
             require("lspconfig")[server_name].setup({})
@@ -43,6 +46,8 @@ return {
         end
       },
     })
+    -- require("lsp.educationallsp")
+    -- require("lsp.vani")
   end,
 
 }

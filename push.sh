@@ -10,6 +10,7 @@ python3 make_copy.py
 rm -rf __pycache__/
 
 # Remove large bin
+rm .local/bin/{uv,uvx}
 
 # Let me do remaining with lazygit
 lazygit

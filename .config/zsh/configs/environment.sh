@@ -11,3 +11,4 @@ export PATH=$PATH:$GOPATH/bin
 export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
 # source "$HOME/.local/bin/env"
 
+alias firefox="firefox-developer-edition"
