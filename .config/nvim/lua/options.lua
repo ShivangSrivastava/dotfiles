@@ -16,7 +16,11 @@ set.shiftwidth = 2   -- Indentation width of 2 spaces
 -- General settings
 set.swapfile = false -- Disable swap files
 set.scrolloff = 8    -- Keep 8 lines visible when scrolling
--- set.mouse = ""       -- Disable mouse support
+
+-- folding
+set.foldmethod = "indent"
+set.foldlevel = 1
+set.foldclose = "all"
 
 
 vim.api.nvim_create_autocmd("BufWritePre", {
@@ -68,4 +72,3 @@ vim.diagnostic.config({
 vim.keymap.set("n", "<leader>er", function()
   vim.api.nvim_put({ "if err != nil {", "    return err", "}" }, "l", true, true)
 end, { desc = "Insert Go error check" })
-

@@ -10,7 +10,7 @@ Keep it simple, stupid (KISS).
 sudo pacman -S git stow
 git clone https://github.com/ShivangSrivastava/dotfiles
 cd dotfiles
-stow .
+stow --adopt .
 ```
 
 ## Requirements
