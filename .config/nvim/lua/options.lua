@@ -19,7 +19,7 @@ set.scrolloff = 8    -- Keep 8 lines visible when scrolling
 
 -- folding
 set.foldmethod = "indent"
-set.foldlevel = 1
+set.foldlevel = 3
 set.foldclose = "all"
 
 
