@@ -9,19 +9,26 @@ TMP_TIMELINE=$(mktemp)
 TMP_LOG_ALL=$(mktemp)
 
 # Get all relevant events and combine them
-journalctl --since="$SINCE" --no-pager | rg -i " mounted.*boot|unmounted.*boot|starting system suspend|systemd-suspend.service" > "$TMP_LOG_ALL"
+journalctl --since="$SINCE" --no-pager | rg -i " mounted.*boot|unmounted.*boot|starting system suspend|systemd-suspend.service|The system will hibernate now|hibernation exit|starting system hybrid-sleep|systemd-hybrid-sleep.service" > "$TMP_LOG_ALL"
+
 {
     # Power on events (boot mounted)
-     rg  -i " mounted.*boot" "$TMP_LOG_ALL"| sed 's/$/ POWER_ON/'
+    rg -i " mounted.*boot" "$TMP_LOG_ALL" | sed 's/$/ POWER_ON/'
     
     # Power off events (boot unmounted)
-     rg -i "unmounted.*boot" "$TMP_LOG_ALL" | sed 's/$/ POWER_OFF/'
+    rg -i "unmounted.*boot" "$TMP_LOG_ALL" | sed 's/$/ POWER_OFF/'
     
     # Suspend events (going to sleep)
-     rg  -i "starting system suspend" "$TMP_LOG_ALL" | sed 's/$/ SUSPEND/'
+    rg -i "starting system suspend" "$TMP_LOG_ALL" | sed 's/$/ SUSPEND/'
     
-    # Resume events (waking from sleep)
-     rg -i "systemd-suspend.service" "$TMP_LOG_ALL"| rg -v "starting" | sed 's/$/ RESUME/'
+    # Hibernation events (going to hibernation)
+    rg -i "The system will hibernate now!" "$TMP_LOG_ALL" | sed 's/$/ HIBERNATE/'
+    
+    # Hybrid-sleep events (suspend + hibernate)
+    rg -i "starting system hybrid-sleep" "$TMP_LOG_ALL" | sed 's/$/ HYBRID_SLEEP/'
+    
+    # Resume events (waking from sleep/hibernation/hybrid-sleep)
+    rg -i "systemd-suspend.service|hibernation exit|systemd-hybrid-sleep.service" "$TMP_LOG_ALL" | rg -v "starting" | sed 's/$/ RESUME/'
 } > "$TMP_LOG"
 
 # Function to parse events into timeline
@@ -69,6 +76,7 @@ calculate_screentime() {
         cmd | getline epoch
         close(cmd)
         
+        # Events that start active time
         if (event == "POWER_ON" || event == "RESUME") {
             if (!active) {
                 active = 1
@@ -77,7 +85,8 @@ calculate_screentime() {
                 printf "Started: %s\n", timestamp
             }
         }
-        else if (event == "POWER_OFF" || event == "SUSPEND") {
+        # Events that end active time
+        else if (event == "POWER_OFF" || event == "SUSPEND" || event == "HIBERNATE" || event == "HYBRID_SLEEP") {
             if (active) {
                 active = 0
                 duration = epoch - last_epoch
@@ -87,7 +96,14 @@ calculate_screentime() {
                 minutes = int((duration % 3600) / 60)
                 seconds = duration % 60
                 
-                printf "Ended:   %s (Duration: %02d:%02d:%02d)\n", timestamp, hours, minutes, seconds
+                # Show what type of sleep/shutdown occurred
+                sleep_type = ""
+                if (event == "SUSPEND") sleep_type = " (Suspended)"
+                else if (event == "HIBERNATE") sleep_type = " (Hibernated)"
+                else if (event == "HYBRID_SLEEP") sleep_type = " (Hybrid Sleep)"
+                else if (event == "POWER_OFF") sleep_type = " (Powered Off)"
+                
+                printf "Ended:   %s%s (Duration: %02d:%02d:%02d)\n", timestamp, sleep_type, hours, minutes, seconds
                 printf "----------------------------------------\n"
             }
         }
@@ -115,7 +131,7 @@ calculate_screentime() {
             printf "----------------------------------------\n"
         }
         
- # Calculate total time
+        # Calculate total time
         total_days = int(total_seconds / 86400)
         remaining_after_days = total_seconds % 86400
         total_hours = int(remaining_after_days / 3600)
@@ -140,4 +156,4 @@ calculate_screentime() {
 calculate_screentime
 
 # Cleanup
-rm "$TMP_LOG" "$TMP_TIMELINE"
+rm "$TMP_LOG" "$TMP_TIMELINE" "$TMP_LOG_ALL"
