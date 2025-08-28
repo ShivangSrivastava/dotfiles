@@ -1,6 +1,6 @@
 #!/bin/bash
 
-options="Power off\nRestart\nSuspend\nEnable autologin\nDisable autologin"
+options="Hibernate\nPower off\nRestart\nSuspend\nEnable autologin\nDisable autologin"
 
 AUTO_LOGIN_DIR="/etc/systemd/system/getty@tty1.service.d"
 AUTO_LOGIN_FILE="$AUTO_LOGIN_DIR/autologin.conf"
@@ -16,6 +16,9 @@ fi
 selection=$(echo -e $options | fzf --prompt="$AUTO_LOGIN_MESSAGE Select an action " --layout reverse --border )
 
 case "$selection" in
+    "Hibernate")
+        systemctl hibernate
+        ;;
     "Power off")
         systemctl poweroff
         ;;
