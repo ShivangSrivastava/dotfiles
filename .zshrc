@@ -1,10 +1,3 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
 # Set directory where we want to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
@@ -16,9 +9,6 @@ fi
 
 # Source/Load Zinit
 source "${ZINIT_HOME}/zinit.zsh"
-
-# Add in powerlevel10k
-zinit ice depth=1; zinit light romkatv/powerlevel10k
 
 # Add in plugins
 zinit light zsh-users/zsh-syntax-highlighting
@@ -57,9 +47,36 @@ setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY
 setopt HIST_BEEP
 setopt SHAREHISTORY
+setopt HIST_NO_STORE
 
+# ─── Shell Options ─────────────────────────────────────────────────────
+setopt CORRECT              # auto correct mistakes
+setopt INTERACTIVECOMMENTS  # allow comments in interactive mode
+setopt MAGICEQUALSUBST      # enable filename expansion for arguments of the form 'anything=expression'
+setopt NONOMATCH            # hide error message if there is no match for the pattern
+setopt NOTIFY               # report the status of background jobs immediately
+setopt NUMERICGLOBSORT      # sort filenames numerically when it makes sense
+setopt PROMPTSUBST          # enable command substitution in prompt
+
+
+export SPROMPT="zsh: correct '%R' to '%r'? [y/N/a/e] "
+
+# ─── Custom Prompt ─────────────────────────────────────────────────────
+# Simple, clean prompt with git info
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:git*' formats ' %F{blue}(%b)%f'
+zstyle ':vcs_info:git*' actionformats ' %F{blue}(%b)%f %F{red}[%a]%f'
+
+precmd() {
+    vcs_info
+}
+
+# Prompt configuration
+PROMPT='%F{green}%n%f %F{blue}%1~%f${vcs_info_msg_0_} %F{white}❯%f '
 
 # ─── Custom Functions ──────────────────────────────────────────────────
+# tom for django
 tom() {
   if [[ -z "$(rg tomlscript pyproject.toml)" ]]; then
     echo -e "\n[tool.tomlscript]"\
@@ -75,21 +92,30 @@ tom() {
   uvx tomlscript "$@"
 }
 
+# Quick directory navigation
+..() { cd .. }
+...() { cd ../.. }
+....() { cd ../../.. }
 
 # ─── Tmux Reload ───────────────────────────────────────────────────────
 if [ -n "$TMUX" ]; then
   tmux source-file "$TMUX_CONF"
 fi
 
-# Completion
+
+# ─── Completion Configuration ──────────────────────────────────────────
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=* r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' menu select
+zstyle ':completion:*' rehash true                              # automatically find new executables in path
+zstyle ':completion:*' accept-exact '*(N)'                     # speed up completions
+zstyle ':completion:*' use-cache on                            # use cache for better performance
+zstyle ':completion:*' cache-path ~/.zsh/cache
 
 # ─── Aliases ────────────────────────────────────────────────────────────
 alias todo='nvim /home/shivang/todo.md'
 alias ls='ls --color=auto'
-
+alias grep='grep --color=auto'
 
 # Shell integrations
 # eval "$(fzf --zsh)"
@@ -103,7 +129,11 @@ export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:/usr/local/go/bin"
 export PATH="$PATH:$GOPATH/bin"
 export EDITOR="nvim"
-unset VIMINIT
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+export PAGER="less"
+export LESS="-R"                           # raw control characters
+export LESSHISTFILE=-                      # disable less history
+#
+# XDG Base Directory Specification
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
