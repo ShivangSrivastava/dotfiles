@@ -7,5 +7,6 @@ url=$(echo "$website" | cut -d ',' -f2)
 [ -z "$website" ] && exit 0
 
 
-nohup brave "$url" --password-store=basic --enable-features=WebRTCPipeWireCapturer --ozone-platform=wayland > /dev/null 2>&1 &
+# nohup brave "$url" --password-store=basic --enable-features=WebRTCPipeWireCapturer --ozone-platform=wayland > /dev/null 2>&1 &
+nohup firefox "$url" > /dev/null 2>&1 &
 hyprctl dispatch workspace 2
