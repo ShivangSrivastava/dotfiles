@@ -28,7 +28,6 @@ vim.keymap.set("n", "<leader>tn", ":tabnext<CR>", { silent = true })     -- Next
 
 -- FzfLua shortcuts
 vim.keymap.set("n", "<C-p>", ":FzfLua files<CR>", { silent = true, desc = "Fuzzy search files" })
-
 vim.keymap.set("n", "<leader><leader>", ":FzfLua live_grep<CR>", { silent = true }) -- Live grep
 vim.keymap.set("n", "<leader>fl", ":FzfLua<CR>", { silent = true })                 -- Open FzfLua
 vim.keymap.set("n", "<leader>ff", ":FzfLua files cwd=%:p:h<CR>")
