@@ -19,13 +19,15 @@ zinit light zsh-users/zsh-completions
 autoload -U compinit && compinit
 
 # Keybindings
-bindkey -v
 bindkey '^ ' autosuggest-accept
 bindkey '^R' history-incremental-search-backward
 bindkey '^T' history-incremental-search-forward
 
 bindkey -s "^p" 'tmux-sessionizer\n'
 
+# Vim mode configuration
+bindkey -v
+export KEYTIMEOUT=1
 
 # ─── History Options ───────────────────────────────────────────────────
 HISTFILE="$HOME/.zsh_history"
@@ -62,18 +64,41 @@ setopt PROMPTSUBST          # enable command substitution in prompt
 export SPROMPT="zsh: correct '%R' to '%r'? [y/N/a/e] "
 
 # ─── Custom Prompt ─────────────────────────────────────────────────────
-# Simple, clean prompt with git info
+# Git integration
 autoload -Uz vcs_info
 zstyle ':vcs_info:*' enable git
-zstyle ':vcs_info:git*' formats ' %F{blue}(%b)%f'
-zstyle ':vcs_info:git*' actionformats ' %F{blue}(%b)%f %F{red}[%a]%f'
+zstyle ':vcs_info:git*' formats ' %F{cyan}⎇ %b%f'
+zstyle ':vcs_info:git*' actionformats ' %F{cyan}⎇ %b%f %F{red}⚡ %a%f'
 
+# Vim mode indicators
+vim_ins_mode="%F{green}❯%f"
+vim_cmd_mode="%F{yellow}❮%f"
+vim_mode=$vim_ins_mode
+
+# Function to update vim mode
+function zle-keymap-select {
+  vim_mode="${${KEYMAP/vicmd/${vim_cmd_mode}}/(main|viins)/${vim_ins_mode}}"
+  zle reset-prompt
+}
+zle -N zle-keymap-select
+
+# Function to reset to insert mode on new line
+function zle-line-init {
+  vim_mode=$vim_ins_mode
+}
+zle -N zle-line-init
+
+# Function to update git info before each prompt
 precmd() {
     vcs_info
 }
 
-# Prompt configuration
-PROMPT='%F{green}%n%f %F{blue}%1~%f${vcs_info_msg_0_} %F{white}❯%f '
+# Enhanced prompt with vim mode
+PROMPT='%F{magenta}╭─%f %F{cyan}%n%f %F{white}at%f %F{blue}%m%f %F{white}in%f %F{yellow}%2~%f${vcs_info_msg_0_}
+%F{magenta}╰─%f ${vim_mode} '
+
+# Optional: Right prompt with time and exit status
+RPROMPT='%(?..%F{red}✘ %?%f) %F{244}%T%f'
 
 # ─── Custom Functions ──────────────────────────────────────────────────
 # tom for django
